@@ -1,0 +1,44 @@
+# SOCKS5 Proxy Configuration
+
+[server]
+host = "127.0.0.1"
+port = 1080
+max_connections = 1000
+connection_timeout_secs = 30
+keep_alive_timeout_secs = 300
+
+[connection_pool]
+max_connections_per_target = 10
+max_total_connections = 500
+connection_timeout_secs = 10
+idle_timeout_secs = 300
+cleanup_interval_secs = 60
+
+[dns]
+servers = [
+    "8.8.8.8:53",
+    "8.8.4.4:53",
+    "1.1.1.1:53"
+]
+timeout_secs = 5
+enable_ipv6 = true
+cache_ttl_secs = 300
+
+[logging]
+level = "info"
+structured = false
+file = ""
+enable_metrics = false
+
+[performance]
+buffer_size = 65536
+tcp_nodelay = true
+reuse_addr = true
+keep_alive = true
+worker_threads = 0
+
+[traffic_mark]
+# Linux SO_MARK value (0 to disable)
+so_mark = 255
+# macOS SO_NET_SERVICE_TYPE value (0 to disable)
+net_service_type = 0

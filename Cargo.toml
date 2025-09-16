@@ -1,0 +1,28 @@
+[package]
+name = "socks5-proxy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec", "io-util"] }
+bytes = "1.0"
+futures = "0.3"
+anyhow = "1.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.10"
+clap = { version = "4.0", features = ["derive"] }
+# Zero-copy and performance optimizations
+mio = "0.8"
+nix = "0.27"
+socket2 = "0.5"
+libc = "0.2"
+# DNS resolution
+trust-dns-resolver = "0.23"
+# Metrics and monitoring
+metrics = "0.21"
+metrics-exporter-prometheus = "0.12"
+# Configuration
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
