@@ -1,9 +1,29 @@
 use crate::error::Result;
+use crate::protocols::Protocol;
 use std::net::SocketAddr;
 
 #[async_trait::async_trait]
 pub trait Inbound: Send + Sync {
     async fn start(&self) -> Result<()>;
+}
+
+/// 基于协议的inbound实现
+pub struct ProtocolInbound {
+    protocol: Box<dyn Protocol>,
+    bind_addr: SocketAddr,
+}
+
+impl ProtocolInbound {
+    pub fn new(protocol: Box<dyn Protocol>, bind_addr: SocketAddr) -> Self {
+        Self { protocol, bind_addr }
+    }
+}
+
+#[async_trait::async_trait]
+impl Inbound for ProtocolInbound {
+    async fn start(&self) -> Result<()> {
+        self.protocol.start_inbound(self.bind_addr).await
+    }
 }
 
 #[cfg(target_os = "linux")]

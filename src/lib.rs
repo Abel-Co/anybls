@@ -9,6 +9,7 @@ pub mod traffic_mark;
 pub mod outbound;
 pub mod router;
 pub mod inbound;
+pub mod protocols;
 
 pub use error::{ProxyError, Result};
 pub use protocol::{Address, Socks5Request, Socks5Response};
@@ -16,3 +17,5 @@ pub use proxy::Socks5Proxy;
 pub use zero_copy::{ZeroCopyRelay, ZeroCopyBuffer, OptimizedCopier};
 pub use outbound::{OutboundConnector, OutboundManager};
 pub use router::{Router, RouteDecision};
+pub use protocols::{Protocol, DirectProtocol, Socks5Protocol, VlessProtocol, BlackholeProtocol, TproxyProtocol};
+pub use inbound::{Inbound, ProtocolInbound};

@@ -89,6 +89,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "anybls"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "clap",
+ "env_logger",
+ "futures",
+ "ipnet",
+ "libc",
+ "log",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "mio 0.8.11",
+ "nix",
+ "regex",
+ "serde",
+ "socket2 0.5.10",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "toml",
+ "trust-dns-resolver",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1152,33 +1179,6 @@ checksum = "233504af464074f9d066d7b5416c5f9b894a5862a6506e306f7b816cdd6f1807"
 dependencies = [
  "libc",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "socks5-proxy"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytes",
- "clap",
- "env_logger",
- "futures",
- "ipnet",
- "libc",
- "log",
- "metrics",
- "metrics-exporter-prometheus",
- "mio 0.8.11",
- "nix",
- "regex",
- "serde",
- "socket2 0.5.10",
- "thiserror",
- "tokio",
- "tokio-util",
- "toml",
- "trust-dns-resolver",
 ]
 
 [[package]]

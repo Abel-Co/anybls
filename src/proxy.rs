@@ -69,7 +69,7 @@ impl Socks5Proxy {
         let ob_manager = get_global_outbound_manager();
         let connector = ob_manager.get(&outbound_name).ok_or_else(|| crate::error::ProxyError::Protocol(format!("Outbound not found: {}", outbound_name)))?;
 
-        let target_stream = match connector.connect(target_addr).await {
+        let target_stream = match connector.connect_outbound(target_addr).await {
             Ok(stream) => stream,
             Err(e) => {
                 warn!("Failed to connect to {}: {}", target_addr, e);

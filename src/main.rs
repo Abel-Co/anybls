@@ -1,18 +1,18 @@
 use clap::Parser;
 use log::{info, error};
 use std::net::{IpAddr, SocketAddr};
-use socks5_proxy::proxy::Socks5Proxy;
-use socks5_proxy::error::Result;
-use socks5_proxy::dns::init_global_dns_resolver;
-use socks5_proxy::config::{Config, init_global_config};
-use socks5_proxy::outbound::init_global_outbound_manager;
-use socks5_proxy::router::init_global_router;
-use socks5_proxy::connection_pool::{init_global_connection_pool, start_connection_pool_cleanup};
-use socks5_proxy::traffic_mark::{init_global_traffic_mark_config, TrafficMarkConfig};
+use anybls::proxy::Socks5Proxy;
+use anybls::error::Result;
+use anybls::dns::init_global_dns_resolver;
+use anybls::config::{Config, init_global_config};
+use anybls::outbound::init_global_outbound_manager;
+use anybls::router::init_global_router;
+use anybls::connection_pool::{init_global_connection_pool, start_connection_pool_cleanup};
+use anybls::traffic_mark::{init_global_traffic_mark_config, TrafficMarkConfig};
 
 #[derive(Parser)]
-#[command(name = "socks5-proxy")]
-#[command(about = "A high-performance SOCKS5 proxy server with zero-copy optimization")]
+#[command(name = "anybls")]
+#[command(about = "A high-performance proxy server with multiple protocols and routing")]
 struct Args {
     /// Port to listen on
     #[arg(short, long, default_value = "1080")]
