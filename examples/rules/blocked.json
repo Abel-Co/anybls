@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "id": "blocked_domains",
+      "domain": [
+        "malware.com",
+        "phishing.net"
+      ],
+      "domain_suffix": [
+        "malware.com",
+        "phishing.net"
+      ],
+      "domain_keyword": [
+        "malware",
+        "phishing",
+        "virus"
+      ],
+      "domain_regex": [
+        "^.*malware.*$",
+        "^.*phishing.*$"
+      ]
+    }
+  ]
+}

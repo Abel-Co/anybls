@@ -4,6 +4,7 @@ use std::time::Duration;
 use std::path::Path;
 use std::fs;
 use crate::error::{ProxyError, Result};
+use crate::routing::rule_sets::RuleSetId;
 use log::info;
 
 /// Configuration for the SOCKS5 proxy server
@@ -27,6 +28,9 @@ pub struct Config {
 
     /// Router configuration
     pub router: RouterConfig,
+    
+    /// High-performance router configuration
+    pub high_performance_router: HighPerformanceRouterConfig,
 }
 
 /// Server configuration
@@ -120,6 +124,7 @@ impl Default for Config {
             traffic_mark: TrafficMarkConfig::default(),
             outbounds: vec![OutboundConfig::direct("direct")],
             router: RouterConfig::default(),
+            high_performance_router: HighPerformanceRouterConfig::default(),
         }
     }
 }
@@ -244,6 +249,81 @@ pub struct RouterConfig {
 impl Default for RouterConfig {
     fn default() -> Self {
         Self { default_outbound: "direct".to_string(), rules: Vec::new() }
+    }
+}
+
+/// 高性能路由器配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HighPerformanceRouterConfig {
+    /// 默认出站
+    pub default_outbound: String,
+    
+    /// 路由规则列表
+    pub rules: Vec<HighPerformanceRouteRule>,
+    
+    /// 缓存配置
+    pub cache: CacheConfig,
+    
+    /// 规则集合文件路径
+    pub rule_set_files: RuleSetFilesConfig,
+}
+
+/// 高性能路由规则
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HighPerformanceRouteRule {
+    /// 规则集合ID列表（OR关系）
+    pub rule_sets: Vec<RuleSetId>,
+    
+    /// 出站名称
+    pub outbound: String,
+}
+
+/// 缓存配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheConfig {
+    /// 最大缓存条目数
+    pub max_size: usize,
+    
+    /// 是否启用缓存
+    pub enabled: bool,
+}
+
+/// 规则集合文件配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RuleSetFilesConfig {
+    /// 域名规则集合文件路径
+    pub domain_files: Vec<String>,
+    
+    /// IP规则集合文件路径
+    pub ip_files: Vec<String>,
+}
+
+impl Default for HighPerformanceRouterConfig {
+    fn default() -> Self {
+        Self {
+            default_outbound: "direct".to_string(),
+            rules: Vec::new(),
+            cache: CacheConfig::default(),
+            rule_set_files: RuleSetFilesConfig::default(),
+        }
+    }
+}
+
+impl Default for CacheConfig {
+    fn default() -> Self {
+        Self {
+            max_size: 10000,
+            enabled: true,
+        }
+    }
+}
+
+impl Default for RuleSetFilesConfig {
+    fn default() -> Self {
+        Self {
+            domain_files: Vec::new(),
+            ip_files: Vec::new(),
+        }
     }
 }
 

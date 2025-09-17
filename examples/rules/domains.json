@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "id": "google_domains",
+      "domain": [
+        "google.com",
+        "googleapis.com",
+        "gstatic.com"
+      ],
+      "domain_suffix": [
+        "google.com",
+        "googleapis.com",
+        "gstatic.com",
+        "youtube.com",
+        "youtu.be"
+      ],
+      "domain_keyword": [
+        "google",
+        "youtube",
+        "gmail"
+      ],
+      "domain_regex": [
+        "^.*\\.google\\.com$",
+        "^.*\\.googleapis\\.com$"
+      ]
+    }
+  ]
+}
