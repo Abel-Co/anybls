@@ -41,4 +41,4 @@ worker_threads = 0
 # Linux SO_MARK value (0 to disable)
 so_mark = 255
 # macOS SO_NET_SERVICE_TYPE value (0 to disable)
-net_service_type = 0
+net_service_type = 255
