@@ -1,13 +1,13 @@
-use tokio::net::{TcpListener, TcpStream};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use std::net::SocketAddr;
 use crate::error::{ProxyError, Result};
-use crate::protocol::{handle_socks5_handshake, Socks5Request, Socks5Response};
-use crate::zero_copy::ZeroCopyRelay;
-use crate::traffic_mark::{create_marked_tcp_stream, get_global_traffic_mark_config};
-use crate::router::get_global_router;
 use crate::outbound::get_global_outbound_manager;
-use log::{info, warn, error, debug};
+use crate::protocol::{handle_socks5_handshake, Socks5Request, Socks5Response};
+use crate::router::get_global_router;
+use crate::traffic_mark::{create_marked_tcp_stream, get_global_traffic_mark_config};
+use crate::zero_copy::ZeroCopyRelay;
+use log::{debug, error, info, warn};
+use std::net::SocketAddr;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
 
 pub struct Socks5Proxy {
     bind_addr: SocketAddr,
@@ -26,7 +26,7 @@ impl Socks5Proxy {
             match listener.accept().await {
                 Ok((stream, client_addr)) => {
                     info!("New connection from {}", client_addr);
-                    
+
                     // Spawn a new task for each connection
                     tokio::spawn(async move {
                         if let Err(e) = Self::handle_connection(stream, client_addr).await {
@@ -52,7 +52,7 @@ impl Socks5Proxy {
         let mut request_buf = [0u8; 256];
         let n = client_stream.read(&mut request_buf).await?;
         let mut request_bytes = bytes::Bytes::from(request_buf[..n].to_vec());
-        
+
         let request = Socks5Request::from_bytes(&mut request_bytes)?;
         debug!("SOCKS5 request: {:?}", request);
 
@@ -106,7 +106,7 @@ async fn create_marked_connection(target_addr: SocketAddr) -> Result<TcpStream> 
             return create_marked_tcp_stream(target_addr, traffic_config).await;
         }
     }
-    
+
     // Fall back to regular connection if no marking is configured
     debug!("Creating regular connection to {}", target_addr);
     TcpStream::connect(target_addr).await
@@ -154,7 +154,7 @@ impl ConnectionHandler {
         let mut request_buf = [0u8; 256];
         let n = self.client_stream.read(&mut request_buf).await?;
         let mut request_bytes = bytes::Bytes::from(request_buf[..n].to_vec());
-        
+
         Socks5Request::from_bytes(&mut request_bytes)
     }
 

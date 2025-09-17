@@ -1,9 +1,11 @@
-use std::net::SocketAddr;
-use async_trait::async_trait;
-use tokio::net::TcpStream;
-use crate::error::{ProxyError, Result};
 use crate::config::{OutboundConfig, OutboundType};
-use crate::protocols::{Protocol, DirectProtocol, Socks5Protocol, VlessProtocol, BlackholeProtocol};
+use crate::error::{ProxyError, Result};
+use crate::protocols::{
+    BlackholeProtocol, DirectProtocol, Protocol, Socks5Protocol, VlessProtocol,
+};
+use async_trait::async_trait;
+use std::net::SocketAddr;
+use tokio::net::TcpStream;
 
 #[async_trait]
 pub trait OutboundConnector: Send + Sync {
@@ -16,7 +18,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct OutboundManager {
-    connectors: HashMap<String, Arc<dyn Protocol>>, 
+    connectors: HashMap<String, Arc<dyn Protocol>>,
 }
 
 impl OutboundManager {

@@ -1,9 +1,8 @@
 // 匹配结果缓存
-use std::collections::HashMap;
-use std::net::IpAddr;
-use std::sync::Arc;
-use std::hash::{Hash, Hasher};
 use crate::routing::matchers::MatcherResult;
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::net::IpAddr;
 
 /// 缓存键
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -102,7 +101,7 @@ mod tests {
     #[test]
     fn test_domain_cache() {
         let mut cache = MatchCache::new(100);
-        
+
         cache.set_domain("example.com".to_string(), MatcherResult::Match);
         assert_eq!(cache.get_domain("example.com"), Some(&MatcherResult::Match));
         assert_eq!(cache.get_domain("other.com"), None);
@@ -112,7 +111,7 @@ mod tests {
     fn test_ip_cache() {
         let mut cache = MatchCache::new(100);
         let ip = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
-        
+
         cache.set_ip(ip, MatcherResult::Match);
         assert_eq!(cache.get_ip(&ip), Some(&MatcherResult::Match));
     }

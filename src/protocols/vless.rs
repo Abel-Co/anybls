@@ -1,7 +1,7 @@
 use super::Protocol;
+use crate::error::{ProxyError, Result};
 use async_trait::async_trait;
 use std::net::SocketAddr;
-use crate::error::{ProxyError, Result};
 use tokio::net::TcpStream;
 
 pub struct VlessProtocol {
@@ -33,11 +33,11 @@ impl Protocol for VlessProtocol {
     fn name(&self) -> &str {
         "vless"
     }
-    
+
     async fn connect_outbound(&self, _target: SocketAddr) -> Result<TcpStream> {
         Err(ProxyError::Protocol("VLESS protocol not implemented yet".to_string()))
     }
-    
+
     async fn start_inbound(&self, _bind_addr: SocketAddr) -> Result<()> {
         Err(ProxyError::Protocol("VLESS protocol not implemented yet".to_string()))
     }

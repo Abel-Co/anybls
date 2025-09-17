@@ -1,10 +1,10 @@
+use crate::error::{ProxyError, Result};
+use log::{debug, warn};
 use std::net::{IpAddr, SocketAddr};
 use trust_dns_resolver::{
     config::{ResolverConfig, ResolverOpts},
     TokioAsyncResolver,
 };
-use crate::error::{ProxyError, Result};
-use log::{debug, warn};
 
 /// DNS resolver for SOCKS5 proxy
 pub struct DnsResolver {
@@ -121,11 +121,11 @@ mod tests {
     #[tokio::test]
     async fn test_dns_resolution() {
         let resolver = DnsResolver::new().unwrap();
-        
+
         // Test with a well-known domain
         let result = resolver.resolve_domain("google.com", 80).await;
         assert!(result.is_ok());
-        
+
         let socket_addr = result.unwrap();
         assert_eq!(socket_addr.port(), 80);
     }
@@ -133,10 +133,10 @@ mod tests {
     #[tokio::test]
     async fn test_dns_resolution_v4() {
         let resolver = DnsResolver::new().unwrap();
-        
+
         let result = resolver.resolve_domain_v4("google.com", 443).await;
         assert!(result.is_ok());
-        
+
         let socket_addr = result.unwrap();
         assert_eq!(socket_addr.port(), 443);
         assert!(matches!(socket_addr.ip(), IpAddr::V4(_)));

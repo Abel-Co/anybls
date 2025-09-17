@@ -29,11 +29,11 @@ impl Inbound for ProtocolInbound {
 #[cfg(target_os = "linux")]
 pub mod tproxy {
     use super::*;
-    use log::{info, error};
-    use socket2::{Socket, Domain, Type, Protocol};
+    use log::{error, info};
+    use nix::sys::socket::{setsockopt, sockopt::IpTransparent};
+    use socket2::{Domain, Protocol, Socket, Type};
     use std::os::fd::FromRawFd;
     use tokio::net::{TcpListener, UdpSocket};
-    use nix::sys::socket::{setsockopt, sockopt::IpTransparent};
 
     pub struct TProxyInbound {
         pub bind_addr: SocketAddr,

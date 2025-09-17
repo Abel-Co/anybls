@@ -1,9 +1,8 @@
-use std::io;
-use std::net::SocketAddr;
-use tokio::net::TcpStream;
-use socket2::{Socket, Domain, Type, Protocol};
 use crate::error::{ProxyError, Result};
 use log::{debug, warn};
+use socket2::{Domain, Protocol, Socket, Type};
+use std::net::SocketAddr;
+use tokio::net::TcpStream;
 
 /// Traffic marking configuration
 #[derive(Debug, Clone)]
@@ -42,14 +41,14 @@ impl TrafficMarkConfig {
 /// Apply traffic marking to a socket
 pub fn apply_traffic_mark(socket: &Socket, config: &TrafficMarkConfig) -> Result<()> {
     // Apply Linux SO_MARK if configured
-    if let Some(mark) = config.so_mark {
+    if let Some(_mark) = config.so_mark {
         #[cfg(target_os = "linux")]
         {
-            if let Err(e) = platform::apply_so_mark(&socket, mark) {
-                warn!("Failed to set SO_MARK {}: {}", mark, e);
+            if let Err(e) = platform::apply_so_mark(socket, _mark) {
+                warn!("Failed to set SO_MARK {}: {}", _mark, e);
                 return Err(e);
             }
-            debug!("Applied SO_MARK: {}", mark);
+            debug!("Applied SO_MARK: {}", _mark);
         }
         #[cfg(not(target_os = "linux"))]
         {
@@ -61,7 +60,7 @@ pub fn apply_traffic_mark(socket: &Socket, config: &TrafficMarkConfig) -> Result
     if let Some(service_type) = config.net_service_type {
         #[cfg(target_os = "macos")]
         {
-            if let Err(e) = platform::apply_net_service_type(&socket, service_type) {
+            if let Err(e) = platform::apply_net_service_type(socket, service_type) {
                 warn!("Failed to set SO_NET_SERVICE_TYPE {}: {}", service_type, e);
                 return Err(e);
             }
@@ -87,8 +86,8 @@ pub async fn create_marked_tcp_stream(
         SocketAddr::V6(_) => Domain::IPV6,
     };
 
-    let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))
-        .map_err(|e| ProxyError::Io(e))?;
+    let socket =
+        Socket::new(domain, Type::STREAM, Some(Protocol::TCP)).map_err(ProxyError::Io)?;
 
     // Apply traffic marking before connecting
     apply_traffic_mark(&socket, config)?;
@@ -99,8 +98,7 @@ pub async fn create_marked_tcp_stream(
 
     // Convert to tokio TcpStream
     let std_stream = socket.into();
-    let stream = TcpStream::from_std(std_stream)
-        .map_err(|e| ProxyError::Io(e))?;
+    let stream = TcpStream::from_std(std_stream).map_err(ProxyError::Io)?;
 
     debug!("Created marked TCP stream to {}", target_addr);
     Ok(stream)
@@ -109,19 +107,17 @@ pub async fn create_marked_tcp_stream(
 /// Apply traffic marking to an existing TcpStream
 pub fn mark_existing_stream(stream: TcpStream, config: &TrafficMarkConfig) -> Result<TcpStream> {
     // Convert to socket2::Socket for marking
-    let std_stream = stream.into_std()
-        .map_err(|e| ProxyError::Io(e))?;
-    
+    let std_stream = stream.into_std().map_err(ProxyError::Io)?;
+
     let socket = Socket::from(std_stream);
-    
+
     // Apply traffic marking
     apply_traffic_mark(&socket, config)?;
-    
+
     // Convert back to tokio TcpStream
     let std_stream = socket.into();
-    let stream = TcpStream::from_std(std_stream)
-        .map_err(|e| ProxyError::Io(e))?;
-    
+    let stream = TcpStream::from_std(std_stream).map_err(ProxyError::Io)?;
+
     debug!("Applied traffic marking to existing stream");
     Ok(stream)
 }
@@ -146,10 +142,9 @@ pub mod platform {
 #[cfg(target_os = "macos")]
 pub mod platform {
     use super::*;
-    use std::os::unix::io::AsRawFd;
 
     /// Apply macOS-specific SO_NET_SERVICE_TYPE to a socket
-    pub fn apply_net_service_type(socket: &Socket, service_type: u32) -> Result<()> {
+    pub fn apply_net_service_type(_socket: &Socket, service_type: u32) -> Result<()> {
         // SO_NET_SERVICE_TYPE is not available in libc crate
         // We'll use a different approach or skip this feature for now
         warn!("SO_NET_SERVICE_TYPE not available in libc crate, skipping marking for {}", service_type);
@@ -187,9 +182,7 @@ pub fn init_global_traffic_mark_config(config: TrafficMarkConfig) {
 
 /// Get global traffic marking configuration
 pub fn get_global_traffic_mark_config() -> Option<&'static TrafficMarkConfig> {
-    unsafe {
-        GLOBAL_TRAFFIC_MARK_CONFIG.as_ref()
-    }
+    unsafe { GLOBAL_TRAFFIC_MARK_CONFIG.as_ref() }
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
 use super::Protocol;
+use crate::error::{ProxyError, Result};
 use async_trait::async_trait;
 use std::net::SocketAddr;
-use crate::error::{ProxyError, Result};
 use tokio::net::TcpStream;
 
 pub struct TproxyProtocol;
@@ -17,16 +17,16 @@ impl Protocol for TproxyProtocol {
     fn name(&self) -> &str {
         "tproxy"
     }
-    
+
     async fn connect_outbound(&self, _target: SocketAddr) -> Result<TcpStream> {
         // TProxy作为outbound没有意义
         Err(ProxyError::Protocol("TProxy protocol cannot be used as outbound".to_string()))
     }
-    
-    async fn start_inbound(&self, bind_addr: SocketAddr) -> Result<()> {
+
+    async fn start_inbound(&self, _bind_addr: SocketAddr) -> Result<()> {
         #[cfg(target_os = "linux")]
         {
-            self.start_tproxy_linux(bind_addr).await
+            self.start_tproxy_linux(_bind_addr).await
         }
         #[cfg(not(target_os = "linux"))]
         {
@@ -38,10 +38,10 @@ impl Protocol for TproxyProtocol {
 impl TproxyProtocol {
     #[cfg(target_os = "linux")]
     async fn start_tproxy_linux(&self, bind_addr: SocketAddr) -> Result<()> {
-        use socket2::{Socket, Domain, Type, Protocol};
         use nix::sys::socket::{setsockopt, sockopt::IpTransparent};
-        use tokio::net::{TcpListener, UdpSocket};
+        use socket2::{Domain, Protocol, Socket, Type};
         use std::os::fd::FromRawFd;
+        use tokio::net::{TcpListener, UdpSocket};
 
         // TCP透明代理
         let tcp_listener = self.create_transparent_tcp_listener(bind_addr)?;
@@ -49,7 +49,7 @@ impl TproxyProtocol {
             TcpListener::from_std(std::net::TcpListener::from_raw_fd(tcp_listener.as_raw_fd())) 
         };
         log::info!("TProxy TCP listening on {}", bind_addr);
-        
+
         tokio::spawn(async move {
             loop {
                 match listener.accept().await {
@@ -69,14 +69,14 @@ impl TproxyProtocol {
         let udp = self.create_transparent_udp_socket(bind_addr)?;
         let _udp = UdpSocket::from_std(udp)?;
         log::info!("TProxy UDP bound on {}", bind_addr);
-        
+
         Ok(())
     }
 
     #[cfg(target_os = "linux")]
     fn create_transparent_tcp_listener(&self, addr: SocketAddr) -> Result<std::net::TcpListener> {
-        use socket2::{Socket, Domain, Type, Protocol};
         use nix::sys::socket::{setsockopt, sockopt::IpTransparent};
+        use socket2::{Domain, Protocol, Socket, Type};
         use std::os::fd::AsRawFd;
 
         let domain = match addr { 
@@ -94,8 +94,8 @@ impl TproxyProtocol {
 
     #[cfg(target_os = "linux")]
     fn create_transparent_udp_socket(&self, addr: SocketAddr) -> Result<std::net::UdpSocket> {
-        use socket2::{Socket, Domain, Type, Protocol};
         use nix::sys::socket::{setsockopt, sockopt::IpTransparent};
+        use socket2::{Domain, Protocol, Socket, Type};
         use std::os::fd::AsRawFd;
 
         let domain = match addr { 

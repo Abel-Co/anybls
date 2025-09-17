@@ -1,24 +1,26 @@
-pub mod error;
-pub mod protocol;
-pub mod proxy;
-pub mod zero_copy;
-pub mod dns;
-pub mod connection_pool;
 pub mod config;
-pub mod traffic_mark;
-pub mod outbound;
-pub mod router;
+pub mod connection_pool;
+pub mod dns;
+pub mod error;
 pub mod inbound;
+pub mod outbound;
+pub mod protocol;
 pub mod protocols;
+pub mod proxy;
+pub mod router;
 pub mod routing;
+pub mod traffic_mark;
+pub mod zero_copy;
 
 pub use error::{ProxyError, Result};
-pub use protocol::{Address, Socks5Request, Socks5Response};
-pub use proxy::Socks5Proxy;
-pub use zero_copy::{ZeroCopyRelay, ZeroCopyBuffer, OptimizedCopier};
-pub use outbound::{OutboundConnector, OutboundManager};
-pub use router::{Router, RouteDecision};
-pub use protocols::{Protocol, DirectProtocol, Socks5Protocol, VlessProtocol, BlackholeProtocol, TproxyProtocol};
 pub use inbound::{Inbound, ProtocolInbound};
+pub use outbound::{OutboundConnector, OutboundManager};
+pub use protocol::{Address, Socks5Request, Socks5Response};
+pub use protocols::{
+    BlackholeProtocol, DirectProtocol, Protocol, Socks5Protocol, TproxyProtocol, VlessProtocol,
+};
+pub use proxy::Socks5Proxy;
+pub use router::{RouteDecision, Router};
+pub use routing::rule_sets::{DomainRuleSet, IpRuleSet, RuleSetManager};
 pub use routing::{HighPerformanceRouter, RouteRule};
-pub use routing::rule_sets::{RuleSetManager, DomainRuleSet, IpRuleSet};
+pub use zero_copy::{OptimizedCopier, ZeroCopyBuffer, ZeroCopyRelay};

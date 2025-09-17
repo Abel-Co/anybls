@@ -1,9 +1,9 @@
-use tokio::io::{AsyncRead, AsyncWrite, ReadHalf, WriteHalf, AsyncReadExt, AsyncWriteExt};
-use tokio::io::split;
+use crate::error::Result;
+use bytes::{Buf, BytesMut};
 use futures::future::try_join;
 use std::io::Result as IoResult;
-use bytes::{Buf, BytesMut};
-use crate::error::Result;
+use tokio::io::split;
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf};
 
 /// Zero-copy bidirectional data relay
 /// This structure efficiently forwards data between two streams without copying
@@ -15,13 +15,10 @@ pub struct ZeroCopyRelay {
 }
 
 impl ZeroCopyRelay {
-    pub fn new(
-        client_stream: tokio::net::TcpStream,
-        target_stream: tokio::net::TcpStream,
-    ) -> Self {
+    pub fn new(client_stream: tokio::net::TcpStream, target_stream: tokio::net::TcpStream) -> Self {
         let (client_read, client_write) = split(client_stream);
         let (target_read, target_write) = split(target_stream);
-        
+
         Self {
             client_read,
             client_write,
@@ -33,17 +30,11 @@ impl ZeroCopyRelay {
     /// Start the zero-copy relay between client and target
     pub async fn start(self) -> Result<()> {
         // Create two futures for bidirectional data transfer
-        let client_to_target = Self::relay_data(
-            self.client_read,
-            self.target_write,
-            "client -> target"
-        );
-        
-        let target_to_client = Self::relay_data(
-            self.target_read,
-            self.client_write,
-            "target -> client"
-        );
+        let client_to_target =
+            Self::relay_data(self.client_read, self.target_write, "client -> target");
+
+        let target_to_client =
+            Self::relay_data(self.target_read, self.client_write, "target -> client");
 
         // Run both relays concurrently
         // If either side closes, the relay stops
@@ -60,11 +51,7 @@ impl ZeroCopyRelay {
     }
 
     /// Relay data from source to destination with zero-copy optimization
-    async fn relay_data<R, W>(
-        mut source: R,
-        mut dest: W,
-        direction: &str,
-    ) -> Result<()>
+    async fn relay_data<R, W>(mut source: R, mut dest: W, direction: &str) -> Result<()>
     where
         R: AsyncRead + Unpin,
         W: AsyncWrite + Unpin,
@@ -72,7 +59,7 @@ impl ZeroCopyRelay {
         // Use larger buffer for better performance
         let mut buffer = BytesMut::with_capacity(64 * 1024); // 64KB buffer
         let mut total_bytes = 0u64;
-        
+
         loop {
             // Read data from source with zero-copy optimization
             let bytes_read = source.read_buf(&mut buffer).await?;
@@ -136,18 +123,18 @@ impl ZeroCopyBuffer {
             // Wrap around case: write to end then beginning
             let end_space = self.capacity - self.write_pos;
             let mut total_read = 0;
-            
+
             if end_space > 0 {
                 let slice = &mut self.data[self.write_pos..self.capacity];
                 total_read += reader.read(slice).await?;
             }
-            
+
             if total_read == end_space && self.read_pos > 0 {
                 let remaining = available - end_space;
                 let slice = &mut self.data[0..remaining.min(self.read_pos)];
                 total_read += reader.read(slice).await?;
             }
-            
+
             total_read
         };
 
@@ -172,18 +159,18 @@ impl ZeroCopyBuffer {
             // Wrap around case: read to end then beginning
             let end_space = self.capacity - self.read_pos;
             let mut total_written = 0;
-            
+
             if end_space > 0 {
                 let data = &self.data[self.read_pos..self.capacity];
                 total_written += writer.write(data).await?;
             }
-            
+
             if total_written == end_space {
                 let remaining = available - end_space;
                 let data = &self.data[0..remaining];
                 total_written += writer.write(data).await?;
             }
-            
+
             total_written
         };
 

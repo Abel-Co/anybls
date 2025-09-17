@@ -1,9 +1,9 @@
 use super::Protocol;
+use crate::error::{ProxyError, Result};
 use async_trait::async_trait;
 use std::net::SocketAddr;
-use crate::error::{ProxyError, Result};
-use tokio::net::{TcpStream, TcpListener};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
 
 pub struct Socks5Protocol {
     // 作为outbound时的服务器地址
@@ -25,7 +25,7 @@ impl Protocol for Socks5Protocol {
     fn name(&self) -> &str {
         "socks5"
     }
-    
+
     async fn connect_outbound(&self, target: SocketAddr) -> Result<TcpStream> {
         let server_addr = self.server_addr
             .ok_or_else(|| ProxyError::Protocol("SOCKS5 server address not configured".to_string()))?;
@@ -47,7 +47,7 @@ impl Protocol for Socks5Protocol {
         req.push(0x05); // 版本
         req.push(0x01); // 连接命令
         req.push(0x00); // 保留字段
-        
+
         // 地址类型和地址
         match target.ip() {
             std::net::IpAddr::V4(ipv4) => {
@@ -68,17 +68,17 @@ impl Protocol for Socks5Protocol {
         if head[1] != 0x00 { 
             return Err(ProxyError::ConnectionFailed(format!("SOCKS5 connect failed: {:x}", head[1]))); 
         }
-        
+
         // 跳过绑定的地址信息
-        let to_read = match head[3] { 
+        let to_read = match head[3] {
             0x01 => 4,  // IPv4
             0x04 => 16, // IPv6
             0x03 => {   // 域名
                 let mut l = [0u8; 1];
                 stream.read_exact(&mut l).await?;
                 l[0] as usize
-            },
-            _ => 0 
+            }
+            _ => 0,
         };
         if to_read > 0 {
             let mut addr = vec![0u8; to_read];
@@ -89,14 +89,14 @@ impl Protocol for Socks5Protocol {
 
         Ok(stream)
     }
-    
+
     async fn start_inbound(&self, bind_addr: SocketAddr) -> Result<()> {
         let listener = TcpListener::bind(bind_addr).await?;
         log::info!("SOCKS5 inbound listening on {}", bind_addr);
-        
+
         loop {
             match listener.accept().await {
-                Ok((stream, client_addr)) => {
+                Ok((_stream, client_addr)) => {
                     log::info!("SOCKS5 connection from {}", client_addr);
                     // 这里应该处理SOCKS5连接，但为了简化，先只记录
                     // 实际实现需要处理SOCKS5协议握手和转发

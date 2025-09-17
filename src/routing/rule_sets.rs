@@ -1,9 +1,7 @@
 // 规则集合数据结构
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::net::IpAddr;
-use ipnet::IpNet;
-use crate::error::Result;
 
 /// 规则集合ID - 用于缓存和引用
 pub type RuleSetId = String;
@@ -12,17 +10,17 @@ pub type RuleSetId = String;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DomainRuleSet {
     pub id: RuleSetId,
-    pub domain: Vec<String>,           // 完整域名匹配
-    pub domain_suffix: Vec<String>,    // 域名后缀匹配
-    pub domain_keyword: Vec<String>,   // 域名关键字匹配
-    pub domain_regex: Vec<String>,     // 正则表达式匹配
+    pub domain: Vec<String>,         // 完整域名匹配
+    pub domain_suffix: Vec<String>,  // 域名后缀匹配
+    pub domain_keyword: Vec<String>, // 域名关键字匹配
+    pub domain_regex: Vec<String>,   // 正则表达式匹配
 }
 
 /// IP规则集合
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IpRuleSet {
     pub id: RuleSetId,
-    pub ip_cidr: Vec<String>,          // IP-CIDR列表
+    pub ip_cidr: Vec<String>, // IP-CIDR列表
 }
 
 /// 规则集合枚举
@@ -95,8 +93,9 @@ impl RuleSetManager {
             rules: Vec<DomainRuleSet>,
         }
 
-        let file: DomainJsonFile = serde_json::from_str(json_content)
-            .map_err(|e| crate::error::ProxyError::Protocol(format!("Invalid domain JSON: {}", e)))?;
+        let file: DomainJsonFile = serde_json::from_str(json_content).map_err(|e| {
+            crate::error::ProxyError::Protocol(format!("Invalid domain JSON: {}", e))
+        })?;
 
         for rule in file.rules {
             self.add_domain_set(rule);
@@ -136,7 +135,7 @@ mod tests {
     #[test]
     fn test_rule_set_manager() {
         let mut manager = RuleSetManager::new();
-        
+
         let domain_set = DomainRuleSet {
             id: "test_domain".to_string(),
             domain: vec!["example.com".to_string()],
@@ -144,9 +143,9 @@ mod tests {
             domain_keyword: vec!["test".to_string()],
             domain_regex: vec![r"^test.*\.com$".to_string()],
         };
-        
+
         manager.add_domain_set(domain_set);
-        
+
         assert!(manager.get_domain_set(&"test_domain".to_string()).is_some());
         assert!(manager.get_domain_set(&"nonexistent".to_string()).is_none());
     }

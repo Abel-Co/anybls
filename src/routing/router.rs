@@ -1,17 +1,17 @@
 // 高性能路由器
+use crate::routing::{
+    cache::{CacheStats, MatchCache},
+    matchers::{MatcherCache, MatcherResult},
+    rule_sets::{RuleSetId, RuleSetManager},
+};
 use std::net::IpAddr;
 use std::sync::{Arc, RwLock};
-use crate::routing::{
-    rule_sets::{RuleSetManager, RuleSetId},
-    matchers::{MatcherResult, MatcherCache},
-    cache::{MatchCache, CacheStats},
-};
 
 /// 路由规则
 #[derive(Debug, Clone)]
 pub struct RouteRule {
-    pub rule_sets: Vec<RuleSetId>,  // 规则集合ID列表（OR关系）
-    pub outbound: String,           // 出站名称
+    pub rule_sets: Vec<RuleSetId>, // 规则集合ID列表（OR关系）
+    pub outbound: String,          // 出站名称
 }
 
 /// 高性能路由器
@@ -198,7 +198,7 @@ mod tests {
     #[test]
     fn test_router_domain_matching() {
         let mut router = HighPerformanceRouter::new("direct".to_string());
-        
+
         // 添加域名规则集合
         let domain_set = DomainRuleSet {
             id: "google_domains".to_string(),
@@ -225,7 +225,7 @@ mod tests {
     #[test]
     fn test_router_ip_matching() {
         let mut router = HighPerformanceRouter::new("direct".to_string());
-        
+
         // 添加IP规则集合
         let ip_set = IpRuleSet {
             id: "private_ips".to_string(),

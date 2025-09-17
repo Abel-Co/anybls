@@ -1,3 +1,5 @@
+use crate::error::{ProxyError, Result};
+use log::{debug, info};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -5,8 +7,6 @@ use std::time::{Duration, Instant};
 use tokio::net::TcpStream;
 use tokio::sync::{RwLock, Semaphore};
 use tokio::time::timeout;
-use crate::error::{ProxyError, Result};
-use log::{debug, info};
 
 /// Connection pool for managing TCP connections
 pub struct ConnectionPool {
@@ -101,7 +101,7 @@ impl ConnectionPool {
     /// Return a connection to the pool
     pub async fn return_connection(&self, mut connection: PooledConnection) {
         let target_addr = connection.target_addr();
-        
+
         // Check if the connection is still valid
         if connection.is_expired(self.idle_timeout) {
             debug!("Connection to {} expired, dropping", target_addr);
@@ -114,7 +114,7 @@ impl ConnectionPool {
         // Add to pool if there's space
         let mut pools = self.pools.write().await;
         let pool = pools.entry(target_addr).or_insert_with(Vec::new);
-        
+
         if pool.len() < self.max_connections_per_target {
             debug!("Returning connection to pool for {}", target_addr);
             pool.push(connection);
@@ -126,18 +126,18 @@ impl ConnectionPool {
     /// Get a connection from the pool for a specific target
     async fn get_from_pool(&self, target_addr: SocketAddr) -> Result<Option<PooledConnection>> {
         let mut pools = self.pools.write().await;
-        
+
         if let Some(pool) = pools.get_mut(&target_addr) {
             // Remove expired connections
             pool.retain(|conn| !conn.is_expired(self.idle_timeout));
-            
+
             // Return the first available connection
             if let Some(connection) = pool.pop() {
                 debug!("Found pooled connection to {}", target_addr);
                 return Ok(Some(connection));
             }
         }
-        
+
         Ok(None)
     }
 
@@ -145,14 +145,14 @@ impl ConnectionPool {
     pub async fn cleanup_expired(&self) {
         let mut pools = self.pools.write().await;
         let mut total_cleaned = 0;
-        
+
         for (_target_addr, pool) in pools.iter_mut() {
             let before = pool.len();
             pool.retain(|conn| !conn.is_expired(self.idle_timeout));
             let after = pool.len();
             total_cleaned += before - after;
         }
-        
+
         if total_cleaned > 0 {
             info!("Cleaned up {} expired connections", total_cleaned);
         }
@@ -163,14 +163,14 @@ impl ConnectionPool {
         let pools = self.pools.read().await;
         let mut total_connections = 0;
         let mut targets = 0;
-        
+
         for pool in pools.values() {
             total_connections += pool.len();
             if !pool.is_empty() {
                 targets += 1;
             }
         }
-        
+
         PoolStats {
             total_connections,
             targets,
@@ -219,7 +219,7 @@ pub fn get_global_connection_pool() -> &'static ConnectionPool {
 /// Start the connection pool cleanup task
 pub async fn start_connection_pool_cleanup(interval: Duration) {
     let pool = get_global_connection_pool();
-    
+
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(interval);
         loop {

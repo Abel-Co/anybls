@@ -1,14 +1,14 @@
-use clap::Parser;
-use log::{info, error};
-use std::net::{IpAddr, SocketAddr};
-use anybls::proxy::Socks5Proxy;
-use anybls::error::Result;
-use anybls::dns::init_global_dns_resolver;
-use anybls::config::{Config, init_global_config};
-use anybls::outbound::init_global_outbound_manager;
-use anybls::router::init_global_router;
+use anybls::config::{init_global_config, Config};
 use anybls::connection_pool::{init_global_connection_pool, start_connection_pool_cleanup};
+use anybls::dns::init_global_dns_resolver;
+use anybls::error::Result;
+use anybls::outbound::init_global_outbound_manager;
+use anybls::proxy::Socks5Proxy;
+use anybls::router::init_global_router;
 use anybls::traffic_mark::{init_global_traffic_mark_config, TrafficMarkConfig};
+use clap::Parser;
+use log::{error, info};
+use std::net::{IpAddr, SocketAddr};
 
 #[derive(Parser)]
 #[command(name = "anybls")]
@@ -109,8 +109,8 @@ async fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio::net::TcpStream;
     use std::net::Ipv4Addr;
+    use tokio::net::TcpStream;
 
     #[tokio::test]
     async fn test_proxy_creation() {

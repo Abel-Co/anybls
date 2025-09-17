@@ -1,9 +1,7 @@
 // 高性能路由示例
-use anybls::routing::{
-    HighPerformanceRouter, RouteRule
-};
-use anybls::routing::rule_sets::{RuleSetManager, DomainRuleSet, IpRuleSet};
 use anybls::routing::cache::CacheStats;
+use anybls::routing::rule_sets::{DomainRuleSet, IpRuleSet, RuleSetManager};
+use anybls::routing::{HighPerformanceRouter, RouteRule};
 use std::net::IpAddr;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -82,13 +80,7 @@ fn test_domain_matching(router: &HighPerformanceRouter) {
 }
 
 fn test_ip_matching(router: &HighPerformanceRouter) {
-    let test_ips = vec![
-        "8.8.8.8",
-        "8.8.4.4",
-        "1.1.1.1",
-        "192.168.1.1",
-        "10.0.0.1",
-    ];
+    let test_ips = vec!["8.8.8.8", "8.8.4.4", "1.1.1.1", "192.168.1.1", "10.0.0.1"];
 
     for ip_str in test_ips {
         let ip: IpAddr = ip_str.parse().unwrap();
@@ -102,23 +94,27 @@ fn performance_test(router: &HighPerformanceRouter) {
 
     // 域名性能测试
     let test_domains = vec![
-        "google.com", "www.google.com", "youtube.com", 
-        "other.com", "example.com", "test.com"
+        "google.com",
+        "www.google.com",
+        "youtube.com",
+        "other.com",
+        "example.com",
+        "test.com",
     ];
-    
+
     let iterations = 10000;
     let start = Instant::now();
-    
+
     for _ in 0..iterations {
         for domain in &test_domains {
             let _ = router.select_outbound_for_domain(domain);
         }
     }
-    
+
     let duration = start.elapsed();
     let total_operations = iterations * test_domains.len();
     let ops_per_sec = total_operations as f64 / duration.as_secs_f64();
-    
+
     println!("域名匹配性能: {:.0} ops/sec", ops_per_sec);
     println!("平均延迟: {:.2} μs", duration.as_micros() as f64 / total_operations as f64);
 
@@ -129,19 +125,19 @@ fn performance_test(router: &HighPerformanceRouter) {
         "1.1.1.1".parse().unwrap(),
         "192.168.1.1".parse().unwrap(),
     ];
-    
+
     let start = Instant::now();
-    
+
     for _ in 0..iterations {
         for ip in &test_ips {
             let _ = router.select_outbound_for_ip(*ip);
         }
     }
-    
+
     let duration = start.elapsed();
     let total_operations = iterations * test_ips.len();
     let ops_per_sec = total_operations as f64 / duration.as_secs_f64();
-    
+
     println!("IP匹配性能: {:.0} ops/sec", ops_per_sec);
     println!("平均延迟: {:.2} μs", duration.as_micros() as f64 / total_operations as f64);
 }

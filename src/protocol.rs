@@ -1,7 +1,7 @@
+use crate::error::{ProxyError, Result};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use crate::error::{ProxyError, Result};
 
 #[derive(Debug, Clone)]
 pub enum Address {
@@ -110,14 +110,14 @@ impl Socks5Response {
 
     pub fn to_bytes(&self) -> Bytes {
         let mut buf = BytesMut::with_capacity(256);
-        
+
         // Version
         buf.put_u8(0x05);
         // Status
         buf.put_u8(self.status);
         // Reserved
         buf.put_u8(0x00);
-        
+
         // Address
         match &self.address {
             Address::V4(ip) => {
@@ -134,10 +134,10 @@ impl Socks5Response {
                 buf.put_slice(domain.as_bytes());
             }
         }
-        
+
         // Port
         buf.put_u16(self.port);
-        
+
         buf.freeze()
     }
 }
@@ -148,7 +148,7 @@ where
 {
     let mut buf = [0u8; 256];
     let n = stream.read(&mut buf).await?;
-    
+
     if n < 3 {
         return Err(ProxyError::Protocol("Incomplete handshake".to_string()));
     }
@@ -165,7 +165,7 @@ where
 
     // Check if no authentication is supported
     let no_auth_supported = buf[2..2 + nmethods].contains(&0x00);
-    
+
     if !no_auth_supported {
         // Send "no acceptable methods" response
         let response = [0x05, 0xFF];

@@ -1,13 +1,13 @@
 // 高性能匹配器
+use crate::error::{ProxyError, Result};
+use aho_corasick::AhoCorasick;
+use fst::{Set, SetBuilder};
+use ipnet::IpNet;
+use radix_trie::Trie;
+use regex::RegexSet;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::Arc;
-use fst::{Set, SetBuilder};
-use aho_corasick::AhoCorasick;
-use regex::RegexSet;
-use ipnet::IpNet;
-use radix_trie::Trie;
-use crate::error::{ProxyError, Result};
 
 /// 匹配结果
 #[derive(Debug, Clone, PartialEq)]
@@ -20,13 +20,13 @@ pub enum MatcherResult {
 pub struct DomainMatcher {
     // 完整域名匹配 - FST Set
     exact_domains: Set<Vec<u8>>,
-    
+
     // 域名后缀匹配 - 反向域名FST
     suffix_domains: Set<Vec<u8>>,
-    
+
     // 关键字匹配 - AC自动机
     keyword_matcher: AhoCorasick,
-    
+
     // 正则匹配 - RegexSet
     regex_matcher: RegexSet,
 }
@@ -174,7 +174,6 @@ impl IpMatcher {
         };
         ip & mask
     }
-
 }
 
 /// 匹配器缓存
@@ -216,11 +215,7 @@ impl MatcherCache {
     }
 
     /// 获取或创建IP匹配器
-    pub fn get_ip_matcher(
-        &mut self,
-        key: &str,
-        ip_cidrs: Vec<String>,
-    ) -> Result<Arc<IpMatcher>> {
+    pub fn get_ip_matcher(&mut self, key: &str, ip_cidrs: Vec<String>) -> Result<Arc<IpMatcher>> {
         if let Some(matcher) = self.ip_matchers.get(key) {
             return Ok(matcher.clone());
         }

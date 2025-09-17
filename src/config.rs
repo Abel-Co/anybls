@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
-use std::net::{IpAddr, Ipv4Addr};
-use std::time::Duration;
-use std::path::Path;
-use std::fs;
 use crate::error::{ProxyError, Result};
 use crate::routing::rule_sets::RuleSetId;
 use log::info;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::net::{IpAddr, Ipv4Addr};
+use std::path::Path;
+use std::time::Duration;
 
 /// Configuration for the SOCKS5 proxy server
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -28,7 +28,7 @@ pub struct Config {
 
     /// Router configuration
     pub router: RouterConfig,
-    
+
     /// High-performance router configuration
     pub high_performance_router: HighPerformanceRouterConfig,
 }
@@ -257,13 +257,13 @@ impl Default for RouterConfig {
 pub struct HighPerformanceRouterConfig {
     /// 默认出站
     pub default_outbound: String,
-    
+
     /// 路由规则列表
     pub rules: Vec<HighPerformanceRouteRule>,
-    
+
     /// 缓存配置
     pub cache: CacheConfig,
-    
+
     /// 规则集合文件路径
     pub rule_set_files: RuleSetFilesConfig,
 }
@@ -273,7 +273,7 @@ pub struct HighPerformanceRouterConfig {
 pub struct HighPerformanceRouteRule {
     /// 规则集合ID列表（OR关系）
     pub rule_sets: Vec<RuleSetId>,
-    
+
     /// 出站名称
     pub outbound: String,
 }
@@ -283,7 +283,7 @@ pub struct HighPerformanceRouteRule {
 pub struct CacheConfig {
     /// 最大缓存条目数
     pub max_size: usize,
-    
+
     /// 是否启用缓存
     pub enabled: bool,
 }
@@ -293,7 +293,7 @@ pub struct CacheConfig {
 pub struct RuleSetFilesConfig {
     /// 域名规则集合文件路径
     pub domain_files: Vec<String>,
-    
+
     /// IP规则集合文件路径
     pub ip_files: Vec<String>,
 }
@@ -331,11 +331,11 @@ impl Config {
     /// Load configuration from a TOML file
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let content = fs::read_to_string(path)
-            .map_err(|e| ProxyError::Io(e))?;
+            .map_err(ProxyError::Io)?;
         
         let config: Config = toml::from_str(&content)
             .map_err(|e| ProxyError::Protocol(format!("Invalid configuration: {}", e)))?;
-        
+
         info!("Configuration loaded from file");
         Ok(config)
     }
@@ -344,10 +344,9 @@ impl Config {
     pub fn to_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         let content = toml::to_string_pretty(self)
             .map_err(|e| ProxyError::Protocol(format!("Failed to serialize config: {}", e)))?;
-        
-        fs::write(path, content)
-            .map_err(|e| ProxyError::Io(e))?;
-        
+
+        fs::write(path, content).map_err(ProxyError::Io)?;
+
         info!("Configuration saved to file");
         Ok(())
     }
@@ -372,7 +371,7 @@ impl Config {
 
         // Validate log level
         match self.logging.level.as_str() {
-            "trace" | "debug" | "info" | "warn" | "error" => {},
+            "trace" | "debug" | "info" | "warn" | "error" => {}
             _ => return Err(ProxyError::Protocol("Invalid log level".to_string())),
         }
 
