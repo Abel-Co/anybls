@@ -5,6 +5,8 @@ use crate::error::{ProxyError, Result};
 use crate::protocol::{handle_socks5_handshake, Socks5Request, Socks5Response};
 use crate::zero_copy::ZeroCopyRelay;
 use crate::traffic_mark::{create_marked_tcp_stream, get_global_traffic_mark_config};
+use crate::router::get_global_router;
+use crate::outbound::get_global_outbound_manager;
 use log::{info, warn, error, debug};
 
 pub struct Socks5Proxy {
@@ -58,7 +60,16 @@ impl Socks5Proxy {
         let target_addr = request.address.to_socket_addr_async(request.port).await?;
 
         debug!("Connecting to target: {}", target_addr);
-        let target_stream = match create_marked_connection(target_addr).await {
+        // Decide outbound based on domain/ip
+        let outbound_name = match &request.address {
+            crate::protocol::Address::Domain(d) => get_global_router().select_outbound_for_domain(d),
+            crate::protocol::Address::V4(ip) => get_global_router().select_outbound_for_ip(std::net::IpAddr::V4(*ip)),
+            crate::protocol::Address::V6(ip) => get_global_router().select_outbound_for_ip(std::net::IpAddr::V6(*ip)),
+        };
+        let ob_manager = get_global_outbound_manager();
+        let connector = ob_manager.get(&outbound_name).ok_or_else(|| crate::error::ProxyError::Protocol(format!("Outbound not found: {}", outbound_name)))?;
+
+        let target_stream = match connector.connect(target_addr).await {
             Ok(stream) => stream,
             Err(e) => {
                 warn!("Failed to connect to {}: {}", target_addr, e);

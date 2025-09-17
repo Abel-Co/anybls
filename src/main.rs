@@ -5,6 +5,8 @@ use socks5_proxy::proxy::Socks5Proxy;
 use socks5_proxy::error::Result;
 use socks5_proxy::dns::init_global_dns_resolver;
 use socks5_proxy::config::{Config, init_global_config};
+use socks5_proxy::outbound::init_global_outbound_manager;
+use socks5_proxy::router::init_global_router;
 use socks5_proxy::connection_pool::{init_global_connection_pool, start_connection_pool_cleanup};
 use socks5_proxy::traffic_mark::{init_global_traffic_mark_config, TrafficMarkConfig};
 
@@ -57,6 +59,11 @@ async fn main() -> Result<()> {
     // Initialize DNS resolver
     init_global_dns_resolver()?;
     info!("DNS resolver initialized");
+
+    // Initialize outbounds and router
+    init_global_outbound_manager(&config.outbounds)?;
+    init_global_router(&config.router)?;
+    info!("Outbounds and router initialized");
 
     // Initialize connection pool
     init_global_connection_pool(

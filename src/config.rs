@@ -21,6 +21,12 @@ pub struct Config {
     pub performance: PerformanceConfig,
     /// Traffic marking configuration
     pub traffic_mark: TrafficMarkConfig,
+
+    /// Outbound configurations
+    pub outbounds: Vec<OutboundConfig>,
+
+    /// Router configuration
+    pub router: RouterConfig,
 }
 
 /// Server configuration
@@ -112,6 +118,8 @@ impl Default for Config {
             logging: LoggingConfig::default(),
             performance: PerformanceConfig::default(),
             traffic_mark: TrafficMarkConfig::default(),
+            outbounds: vec![OutboundConfig::direct("direct")],
+            router: RouterConfig::default(),
         }
     }
 }
@@ -187,6 +195,58 @@ impl Default for TrafficMarkConfig {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")]
+pub enum OutboundType {
+    Direct,
+    Socks5 { address: String },
+    Vless { address: String, uuid: String, tls: bool },
+    Blackhole,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OutboundConfig {
+    pub name: String,
+    #[serde(flatten)]
+    pub kind: OutboundType,
+}
+
+impl OutboundConfig {
+    pub fn direct(name: &str) -> Self {
+        Self { name: name.to_string(), kind: OutboundType::Direct }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct DomainLists {
+    pub domain: Vec<String>,
+    pub domain_suffix: Vec<String>,
+    pub domain_keyword: Vec<String>,
+    pub domain_regex: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RouterRuleConfig {
+    pub outbound: String,
+    #[serde(default)]
+    pub domains: DomainLists,
+    #[serde(default)]
+    pub ip_cidr: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RouterConfig {
+    pub default_outbound: String,
+    #[serde(default)]
+    pub rules: Vec<RouterRuleConfig>,
+}
+
+impl Default for RouterConfig {
+    fn default() -> Self {
+        Self { default_outbound: "direct".to_string(), rules: Vec::new() }
+    }
+}
+
 impl Config {
     /// Load configuration from a TOML file
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
@@ -234,6 +294,11 @@ impl Config {
         match self.logging.level.as_str() {
             "trace" | "debug" | "info" | "warn" | "error" => {},
             _ => return Err(ProxyError::Protocol("Invalid log level".to_string())),
+        }
+
+        // Validate outbounds
+        if self.outbounds.is_empty() {
+            return Err(ProxyError::Protocol("At least one outbound must be configured".to_string()));
         }
 
         Ok(())
