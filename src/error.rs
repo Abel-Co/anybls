@@ -5,7 +5,7 @@ pub enum ProxyError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("SOCKS5 protocol error: {0}")]
+    #[error("Protocol error: {0}")]
     Protocol(String),
 
     #[error("Authentication failed")]
