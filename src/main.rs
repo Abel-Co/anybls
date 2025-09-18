@@ -4,7 +4,6 @@ use anybls::dns::init_global_dns_resolver;
 use anybls::error::Result;
 use anybls::outbound::init_global_outbound_manager;
 use anybls::proxy::Socks5Proxy;
-use anybls::router::init_global_router;
 use anybls::traffic_mark::{init_global_traffic_mark_config, TrafficMarkConfig};
 use clap::Parser;
 use log::{error, info};
@@ -62,7 +61,7 @@ async fn main() -> Result<()> {
 
     // Initialize outbounds and router
     init_global_outbound_manager(&config.outbounds)?;
-    init_global_router(&config.router)?;
+    // 路由器初始化已移除，现在使用高性能路由器
     info!("Outbounds and router initialized");
 
     // Initialize connection pool

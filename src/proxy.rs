@@ -1,7 +1,7 @@
 use crate::error::{ProxyError, Result};
 use crate::outbound::get_global_outbound_manager;
 use crate::protocol::{handle_socks5_handshake, Socks5Request, Socks5Response};
-use crate::router::get_global_router;
+use crate::routing::HighPerformanceRouter;
 use crate::traffic_mark::{create_marked_tcp_stream, get_global_traffic_mark_config};
 use crate::zero_copy::ZeroCopyRelay;
 use log::{debug, error, info, warn};
@@ -61,10 +61,12 @@ impl Socks5Proxy {
 
         debug!("Connecting to target: {}", target_addr);
         // Decide outbound based on domain/ip
+        // 创建一个简单的路由器用于测试
+        let router = HighPerformanceRouter::new("direct".to_string());
         let outbound_name = match &request.address {
-            crate::protocol::Address::Domain(d) => get_global_router().select_outbound_for_domain(d),
-            crate::protocol::Address::V4(ip) => get_global_router().select_outbound_for_ip(std::net::IpAddr::V4(*ip)),
-            crate::protocol::Address::V6(ip) => get_global_router().select_outbound_for_ip(std::net::IpAddr::V6(*ip)),
+            crate::protocol::Address::Domain(d) => router.select_outbound_for_domain(d),
+            crate::protocol::Address::V4(ip) => router.select_outbound_for_ip(std::net::IpAddr::V4(*ip)),
+            crate::protocol::Address::V6(ip) => router.select_outbound_for_ip(std::net::IpAddr::V6(*ip)),
         };
         let ob_manager = get_global_outbound_manager();
         let connector = ob_manager.get(&outbound_name).ok_or_else(|| crate::error::ProxyError::Protocol(format!("Outbound not found: {}", outbound_name)))?;

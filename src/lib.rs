@@ -7,7 +7,7 @@ pub mod outbound;
 pub mod protocol;
 pub mod protocols;
 pub mod proxy;
-pub mod router;
+pub mod ron_config;
 pub mod routing;
 pub mod traffic_mark;
 pub mod zero_copy;
@@ -20,7 +20,6 @@ pub use protocols::{
     BlackholeProtocol, DirectProtocol, Protocol, Socks5Protocol, TproxyProtocol, VlessProtocol,
 };
 pub use proxy::Socks5Proxy;
-pub use router::{RouteDecision, Router};
 pub use routing::rule_sets::{DomainRuleSet, IpRuleSet, RuleSetManager};
 pub use routing::{HighPerformanceRouter, RouteRule};
 pub use zero_copy::{OptimizedCopier, ZeroCopyBuffer, ZeroCopyRelay};
