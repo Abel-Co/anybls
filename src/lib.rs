@@ -9,6 +9,7 @@ pub mod protocols;
 pub mod proxy;
 pub mod ron_config;
 pub mod routing;
+pub mod rule_set_downloader;
 pub mod traffic_mark;
 pub mod zero_copy;
 
@@ -22,4 +23,5 @@ pub use protocols::{
 pub use proxy::Socks5Proxy;
 pub use routing::rule_sets::{DomainRuleSet, IpRuleSet, RuleSetManager};
 pub use routing::{HighPerformanceRouter, RouteRule};
+pub use rule_set_downloader::{RuleSetDownloader, RuleSetCacheInfo, CacheStats};
 pub use zero_copy::{OptimizedCopier, ZeroCopyBuffer, ZeroCopyRelay};

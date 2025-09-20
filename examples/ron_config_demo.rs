@@ -19,14 +19,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 加载RON配置
     let ron_config = RonConfig::from_ron_file("examples/simple_config.ron")?;
-    println!("✅ RON配置文件加载成功");
+    println!("RON配置文件加载成功");
 
     // 转换为内部配置
     let internal_config = ron_config.to_internal_config()?;
-    println!("✅ 配置转换成功");
+    println!("配置转换成功");
 
     // 显示配置信息
-    println!("\n📋 配置信息:");
+    println!("\n配置信息:");
     println!("入站配置数量: {}", ron_config.inbounds.len());
     for inbound in &ron_config.inbounds {
         println!("  - {}: {}:{}", inbound.inbound_type, inbound.listen, inbound.listen_port);
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 创建出站管理器
     let outbound_manager = OutboundManager::from_configs(&internal_config.outbounds)?;
-    println!("✅ 出站管理器创建成功");
+    println!("出站管理器创建成功");
 
     // 创建规则集合管理器
     let mut rule_manager = RuleSetManager::new();
@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     rule_manager.add_ip_set(ip_set);
 
-    println!("✅ 规则集合管理器创建成功");
+    println!("规则集合管理器创建成功");
 
     // 创建高性能路由器
     let mut router = HighPerformanceRouter::new(
@@ -82,10 +82,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         router.add_rule(route_rule);
     }
 
-    println!("✅ 高性能路由器创建成功");
+    println!("高性能路由器创建成功");
 
     // 测试路由功能
-    println!("\n🧪 路由测试:");
+    println!("\n路由测试:");
     let test_domains = vec![
         "baidu.com",
         "www.qq.com",
@@ -142,7 +142,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // 显示缓存统计
-    println!("\n📊 缓存统计:");
+    println!("\n缓存统计:");
     let stats = router.get_cache_stats();
     println!("  域名缓存: {} 条目", stats.domain_cache_size);
     println!("  IP缓存: {} 条目", stats.ip_cache_size);
@@ -160,8 +160,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  10000次域名匹配耗时: {:?}", duration);
     println!("  平均每次: {:?}", duration / 30000);
 
-    println!("\n✅ 演示完成！");
-    println!("\n💡 下一步:");
+    println!("\n演示完成！");
+    println!("\n下一步:");
     println!("  1. 实现真正的入站监听器启动");
     println!("  2. 实现出站连接的实际建立");
     println!("  3. 添加规则集合文件的动态加载");

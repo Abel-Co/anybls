@@ -1,42 +1,25 @@
 (
+    log: (
+        disabled: false,
+        timestamp: true,
+        level: "info",
+    ),
     inbounds: [
-        (
-            type: "tproxy",
-            listen: "0.0.0.0",
-            listen_port: 12345,
-        ),
-        (
-            type: "socks",
-            listen: "0.0.0.0",
-            listen_port: 1080,
-        ),
+        (type: "tproxy", listen: "0.0.0.0", listen_port: 12345,),
+        (type: "socks", listen: "0.0.0.0", listen_port: 1080),
     ],
     outbounds: [
-        (
-            tag: "direct",
-            type: "direct",
-        ),
-        (
-            tag: "proxy",
-            type: "socks",
-            server: "127.0.0.1",
-            server_port: 1081,
-        ),
+        (tag: "direct", type: "direct"),
+        (tag: "proxy", type: "socks", server: "127.0.0.1", server_port: 1081),
     ],
     route: (
         rules: [
-            (
-                action: "route",
-                rule_set: ["GeoSite-CN"],
-                outbound: "direct",
-            ),
-            (
-                action: "route",
-                rule_set: ["GeoSite-Gfw"],
-                outbound: "proxy",
-            ),
+            (action: "route", rule_set: ["GeoSite-CN"], outbound: "direct"),
+            (action: "route", rule_set: ["GeoSite-Gfw"], outbound: "proxy"),
         ],
-        rule_set: [],
+        rule_set: [
+            (tag: "GeoSite-CN", type: "remote", url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/google.srs", format: "binary"),
+        ],
         final: "direct",
     ),
 )

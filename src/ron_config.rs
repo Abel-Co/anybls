@@ -1,6 +1,8 @@
 // RON配置文件支持
 use serde::{Deserialize, Serialize};
 use crate::error::Result;
+use crate::rule_set_downloader::RuleSetDownloader;
+use std::path::Path;
 
 /// RON配置根结构
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -171,8 +173,8 @@ pub struct RuleSetConfig {
     pub tag: String,
     #[serde(rename = "type")]
     pub rule_set_type: String,
-    pub url: Option<String>,
-    pub format: Option<String>,
+    pub url: String,
+    pub format: String,
     pub download_detour: Option<String>,
 }
 
@@ -206,6 +208,25 @@ impl RonConfig {
     /// 获取默认出站
     pub fn get_default_outbound(&self) -> &String {
         &self.route.r#final
+    }
+
+    /// 下载所有远程规则集
+    pub async fn download_rule_sets(&self, cache_dir: impl AsRef<Path>) -> Result<RuleSetDownloader> {
+        let mut downloader = RuleSetDownloader::new(cache_dir)?;
+        
+        for rule_set in &self.route.rule_set {
+            if rule_set.rule_set_type == "remote" {
+                println!("准备下载规则集: {} -> {}", rule_set.tag, rule_set.url);
+                downloader.download_rule_set(&rule_set.tag, &rule_set.url).await?;
+            }
+        }
+        
+        Ok(downloader)
+    }
+
+    /// 获取规则集配置
+    pub fn get_rule_sets(&self) -> &Vec<RuleSetConfig> {
+        &self.route.rule_set
     }
 
     /// 转换为我们的内部配置格式
